@@ -1,0 +1,14 @@
+.landing-page {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100vh - (185px + 47px));
+    font-size: 1.5rem;
+    color: black;
+}
+
+.no-bold {
+    font-weight: normal;
+}

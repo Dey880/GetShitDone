@@ -1,0 +1,38 @@
+nav, ul {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+
+nav {
+    padding: 40px 0 40px 0;
+    background-color: #323232;
+}
+
+ul {
+    margin-bottom: 0;
+    padding-left: 0;
+    width: 100%;
+    list-style-type: none;
+}
+
+li a {
+    text-decoration: none;
+    color: white;
+}
+
+li a:hover {
+    text-decoration: underline;
+}
+
+.nav-cluster-right, .nav-cluster-left {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 25%;
+}

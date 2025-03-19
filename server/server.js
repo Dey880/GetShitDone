@@ -14,7 +14,7 @@ const corsOptions = {
     credentials: true
 }
 
-app.use(cord(corsOptions));
+app.use(cors(corsOptions));
 
 app.use(cookieParser());
 
@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('AAAAAAAAAAAHHHHHHHHHHHHHH');
+    res.send('The best API server that has ever existed');
 });
 
 app.listen(process.env.PORT)
