@@ -22,7 +22,11 @@ app.use(cookieParser());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-mongoose.connect(process.env.MONGODB_URL);
+mongoose.connect(process.env.MONGODB_URL).then(() => {
+    console.log('Connected to MongoDB');
+}).catch((err) => {
+    console.log(err);
+});
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
