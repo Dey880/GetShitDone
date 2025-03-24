@@ -14,10 +14,12 @@ export default function Login() {
             { withCredentials: true }
         )
         .then((response) => {
-            console.log(response.data.msg);
+            if( response.data.user) {
+                window.location.href = "/todo";
+            }
         })
         .catch((error) => {
-            console.log(error.response.data.msg);
+            console.log(error.response.data);
         });
     }
     return (

@@ -1,0 +1,296 @@
+.todo-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.todo-form-container {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 3px solid #000;
+  border-radius: 5px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 3px solid #000;
+  font-size: 16px;
+  transition: box-shadow 0.3s ease;
+}
+
+.form-input:focus, .form-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 3px solid #000;
+  min-height: 100px;
+  font-size: 16px;
+  transition: box-shadow 0.3s ease;
+}
+
+.submit-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.submit-button:hover {
+  background-color: #323232;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.todo-list {
+  list-style-type: none;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.todo-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 3px solid #000;
+  border-radius: 5px;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+  animation: fadeIn 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.todo-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item.completed {
+  border-color: #6c757d;
+  opacity: 0.8;
+}
+
+.todo-header {
+  display: flex;
+  align-items: center;
+}
+
+.todo-checkbox {
+  margin-right: 15px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.todo-checkbox:checked {
+  transform: scale(1.1);
+}
+
+.todo-title {
+  margin: 0;
+  font-size: 18px;
+  transition: text-decoration 0.3s ease, opacity 0.3s ease;
+}
+
+.completed .todo-title {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.todo-description {
+  margin-top: 10px;
+  color: #232323;
+  transition: opacity 0.3s ease;
+}
+
+.completed .todo-description {
+  opacity: 0.7;
+}
+
+.todo-status {
+  font-size: 0.9em;
+  margin: 10px 0;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.completed .todo-status {
+  color: #28a745;
+}
+
+.delete-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.delete-button:hover {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.deleting {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+.toggle-form-button {
+  background-color: #323232;
+  color: white;
+  border: 3px solid #000;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-weight: bold;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 16px;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.toggle-form-button:hover {
+  background-color: #454545;
+  transform: translateY(-1px);
+}
+
+.toggle-form-button:active {
+  transform: translateY(0);
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.todo-edit-form {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.todo-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.edit-button:hover {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* Add animation for transitions between view and edit modes */
+@keyframes editModeTransition {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.todo-edit-form {
+  animation: editModeTransition 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}

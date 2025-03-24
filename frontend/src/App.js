@@ -5,6 +5,8 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import About from './pages/About';
+import TodoList from './pages/TodoList';
+import Logout from './pages/Logout';
 
 function App() {
     return (
@@ -14,6 +16,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/todo" element={<TodoList />} />
+                <Route path="/logout" element={<Logout />} />
             </Routes>
         </div>
     );

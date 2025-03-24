@@ -1,4 +1,4 @@
-nav, ul {
+nav, .nav-cluster {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -13,19 +13,19 @@ nav {
     background-color: #323232;
 }
 
-ul {
+.nav-cluster {
     margin-bottom: 0;
     padding-left: 0;
     width: 100%;
     list-style-type: none;
 }
 
-li a {
+.navli a {
     text-decoration: none;
     color: white;
 }
 
-li a:hover {
+.navli a:hover {
     text-decoration: underline;
 }
 
