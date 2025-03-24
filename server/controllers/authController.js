@@ -18,6 +18,7 @@ const authController = {
             const role = 'user';
             let hashedPassword = user.password;
             const isPassword = await bcrypt.compare(password, hashedPassword);
+            console.log(isPassword);
             if (isPassword) {
                 const jwtToken = createJwt(email, role);
                 createCookie(res, jwtToken);
