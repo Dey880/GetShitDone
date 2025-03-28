@@ -1,62 +1,87 @@
-import React from 'react';
+import React, { useState } from 'react';
+import './TodoCalendar.css';
 
-const TodoCalendar = ({ calendarDate, calendarTodos, onNavigate, onTodoClick }) => {
-    const year = calendarDate.getFullYear();
-    const month = calendarDate.getMonth();
-    const monthName = calendarDate.toLocaleString('default', { month: 'long' });
+const TodoCalendar = ({ calendarDate, calendarTodos, onNavigate, onTodoClick, onDateChange }) => {
+    const currentDate = new Date(calendarDate);
+    const [dateInput, setDateInput] = useState(
+        currentDate.toISOString().split('T')[0]
+    );
     
-    // Get the first day of the month
-    const firstDayOfMonth = new Date(year, month, 1);
-    // Get the last day of the month
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    // Get the day of the week of the first day (0 = Sunday, 6 = Saturday)
-    const firstDayWeekday = firstDayOfMonth.getDay();
-    // Get the number of days in the month
-    const daysInMonth = lastDayOfMonth.getDate();
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
     
-    // Create days array
+    const monthYearFormatted = currentDate.toLocaleDateString('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+    });
+    
+    const firstDayOfWeek = firstDayOfMonth.getDay();
+    
     const days = [];
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDayWeekday; i++) {
-        days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+    const handleDateInputChange = (e) => {
+        setDateInput(e.target.value);
+    };
+    
+    const handleGoToDate = () => {
+        if (dateInput) {
+            onDateChange(new Date(dateInput));
+        }
+    };
+    
+    const handleGoToToday = () => {
+        const today = new Date();
+        setDateInput(today.toISOString().split('T')[0]);
+        onDateChange(today);
+    };
+    
+    const weekdayHeaders = weekdays.map(day => (
+        <div key={`header-${day}`} className="calendar-weekday-header">{day}</div>
+    ));
+    
+    const maxVisibleTodos = 3;
+    
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        days.push(
+            <div key={`empty-${i}`} className="calendar-day empty"></div>
+        );
     }
     
-    // Add cells for each day in the month
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dayTodos = calendarTodos[day] || [];
-        const maxVisibleTodos = 3; // Limit number of visible todos to prevent deformation
+    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+        const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+        const dayNum = i;
+        const month = currentDate.getMonth() + 1;
+        const year = currentDate.getFullYear();
+        
+        const dateKey = `${year}-${month}-${dayNum}`;
+        const dayTodos = (calendarTodos[dateKey] || []);
         const hasMoreTodos = dayTodos.length > maxVisibleTodos;
         
+        const isToday = new Date().toDateString() === dayDate.toDateString();
+        
         days.push(
-            <div key={`day-${day}`} className="calendar-day">
-                <div className="calendar-date">{day}</div>
+            <div key={`day-${i}`} className={`calendar-day ${isToday ? 'today' : ''}`}>
+                <div className="calendar-date">
+                    <span className="day-number">{dayNum}</span>
+                </div>
                 <div className="calendar-todos">
-                    {dayTodos.length > 0 ? (
-                        <>
-                            {dayTodos.slice(0, maxVisibleTodos).map(todo => (
-                                <div 
-                                    key={todo._id} 
-                                    className={`calendar-todo ${todo.completed ? 'completed' : ''} priority-${todo.priority}`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onTodoClick(todo);
-                                    }}
-                                >
-                                    <span className="todo-title">{todo.title}</span>
-                                </div>
-                            ))}
-                            {hasMoreTodos && (
-                                <div className="calendar-more-todos" onClick={(e) => {
-                                    e.stopPropagation();
-                                    // Could add functionality to show all todos for this day
-                                }}>
-                                    +{dayTodos.length - maxVisibleTodos} more
-                                </div>
-                            )}
-                        </>
-                    ) : (
-                        <div className="no-todos"></div>
+                    {dayTodos.slice(0, maxVisibleTodos).map(todo => (
+                        <div 
+                            key={todo._id} 
+                            className={`calendar-todo ${todo.completed ? 'completed' : ''} priority-${todo.priority}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onTodoClick(todo);
+                            }}
+                        >
+                            <span className="todo-title">{todo.title}</span>
+                        </div>
+                    ))}
+                    {hasMoreTodos && (
+                        <div className="calendar-more-todos">
+                            +{dayTodos.length - maxVisibleTodos} more
+                        </div>
                     )}
                 </div>
             </div>
@@ -64,22 +89,31 @@ const TodoCalendar = ({ calendarDate, calendarTodos, onNavigate, onTodoClick }) 
     }
     
     return (
-        <div className="calendar-container">
+        <div className="calendar-container month-view">
             <div className="calendar-header">
-                <button onClick={() => onNavigate('prev')}>&lt;</button>
-                <h3>{monthName} {year}</h3>
-                <button onClick={() => onNavigate('next')}>&gt;</button>
+                <div className="calendar-nav">
+                    <button onClick={() => onNavigate('prev')} className="calendar-nav-button">&lt;</button>
+                    <h3>{monthYearFormatted}</h3>
+                    <button onClick={() => onNavigate('next')} className="calendar-nav-button">&gt;</button>
+                </div>
+                
+                <div className="calendar-date-controls">
+                    <input 
+                        type="date" 
+                        value={dateInput}
+                        onChange={handleDateInputChange}
+                        className="calendar-date-input"
+                    />
+                    <button onClick={handleGoToDate} className="calendar-go-button">Go</button>
+                    <button onClick={handleGoToToday} className="calendar-today-button">Today</button>
+                </div>
             </div>
+            
             <div className="calendar-weekdays">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
+                {weekdayHeaders}
             </div>
-            <div className="calendar-days">
+            
+            <div className="calendar-days month-view">
                 {days}
             </div>
         </div>

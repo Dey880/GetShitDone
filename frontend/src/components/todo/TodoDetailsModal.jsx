@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import './TodoDetailsModal.css';
 
 const TodoDetailsModal = ({ todo, onClose, onEdit, onToggleComplete, onDelete }) => {
+    const [justOpened, setJustOpened] = useState(true);
+    
+    useEffect(() => {
+        if (todo) {
+            document.body.style.overflow = 'hidden';
+            
+            const timer = setTimeout(() => {
+                setJustOpened(false);
+            }, 300);
+            
+            return () => {
+                clearTimeout(timer);
+                document.body.style.overflow = 'auto';
+            };
+        }
+    }, [todo]);
+    
     if (!todo) return null;
     
     const formatDate = (dateString) => {
@@ -10,17 +28,41 @@ const TodoDetailsModal = ({ todo, onClose, onEdit, onToggleComplete, onDelete })
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
-        }); // This will format as DD/MM/YYYY
+        });
+    };
+    
+    const handleModalClick = (e) => {
+        e.stopPropagation();
+    };
+    
+    const handleOverlayClick = (e) => {
+        if (!justOpened) {
+            onClose();
+        } else {
+            e.preventDefault();
+            e.stopPropagation();
+        }
     };
     
     return (
-        <div className="todo-details-modal-overlay" onClick={onClose}>
-            <div className="todo-details-modal" onClick={(e) => e.stopPropagation()}>
+        <div 
+            className="todo-details-modal-overlay" 
+            onClick={handleOverlayClick}
+        >
+            <div 
+                className="todo-details-modal" 
+                onClick={handleModalClick}
+                style={{position: 'relative'}}
+            >
+                
                 <div className="todo-details-header">
                     <h3>{todo.title}</h3>
                     <button 
                         className="close-modal-button"
-                        onClick={onClose}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClose();
+                        }}
                     >
                         ×
                     </button>
@@ -61,8 +103,13 @@ const TodoDetailsModal = ({ todo, onClose, onEdit, onToggleComplete, onDelete })
                 <div className="todo-details-actions">
                     <button 
                         className="edit-button"
-                        onClick={() => {
-                            onEdit(todo);
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (typeof onEdit === 'function') {
+                                onEdit(todo);
+                            } else {
+                                console.error('onEdit is not a function');
+                            }
                             onClose();
                         }}
                     >
@@ -70,7 +117,8 @@ const TodoDetailsModal = ({ todo, onClose, onEdit, onToggleComplete, onDelete })
                     </button>
                     <button 
                         className="toggle-complete-button"
-                        onClick={() => {
+                        onClick={(e) => {
+                            e.stopPropagation();
                             onToggleComplete(todo._id, todo.completed);
                             onClose();
                         }}
@@ -79,9 +127,13 @@ const TodoDetailsModal = ({ todo, onClose, onEdit, onToggleComplete, onDelete })
                     </button>
                     <button 
                         className="delete-button"
-                        onClick={() => {
-                            onDelete(todo._id);
-                            onClose();
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (typeof onDelete === 'function') {
+                                onDelete(todo._id);
+                            } else {
+                                console.error('onDelete is not a function');
+                            }
                         }}
                     >
                         Delete

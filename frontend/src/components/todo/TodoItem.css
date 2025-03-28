@@ -1,0 +1,228 @@
+.todo-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 3px solid #000;
+  border-radius: 5px;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+  animation: fadeIn 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.todo-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item.completed {
+  border-color: #6c757d;
+  opacity: 0.8;
+}
+
+.todo-header {
+  display: flex;
+  align-items: center;
+}
+
+.todo-checkbox {
+  margin-right: 15px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.todo-checkbox:checked {
+  transform: scale(1.1);
+}
+
+.todo-title {
+  margin: 0;
+  font-size: 18px;
+  transition: text-decoration 0.3s ease, opacity 0.3s ease;
+}
+
+.completed .todo-title {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.todo-description {
+  margin-top: 10px;
+  color: #232323;
+  transition: opacity 0.3s ease;
+}
+
+.completed .todo-description {
+  opacity: 0.7;
+}
+
+.todo-status {
+  font-size: 0.9em;
+  margin: 10px 0;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.completed .todo-status {
+  color: #28a745;
+}
+
+.delete-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.delete-button:hover {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.deleting {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+.todo-edit-form {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.todo-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.edit-button:hover {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* Add animation for transitions between view and edit modes */
+@keyframes editModeTransition {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.todo-edit-form {
+  animation: editModeTransition 0.3s ease;
+}
+
+.todo-due-date {
+  font-size: 0.9em;
+  color: #555;
+  margin: 5px 0;
+}
+
+.todo-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.todo-priority {
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* Priority styling for list items */
+.todo-item.priority-high {
+  border-left: 6px solid #dc3545;
+}
+
+.todo-item.priority-medium {
+  border-left: 6px solid #ffc107;
+}
+
+.todo-item.priority-low {
+  border-left: 6px solid #28a745;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .todo-item {
+    padding: 12px;
+  }
+  
+  .todo-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .edit-button, .delete-button {
+    width: 100%;
+    margin-bottom: 5px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .todo-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .todo-checkbox {
+    margin-bottom: 10px;
+    transform: scale(1.2); /* Larger checkbox for better touch target */
+  }
+  
+  .todo-title {
+    width: 100%;
+  }
+}

@@ -2,7 +2,6 @@ import axios from 'axios';
 import React, { useEffect, useState, useCallback } from 'react';
 import "../css/pages/TodoList.css";
 
-// Import components
 import TodoForm from '../components/todo/TodoForm';
 import TodoItem from '../components/todo/TodoItem';
 import TodoCalendar from '../components/todo/TodoCalendar';
@@ -26,8 +25,9 @@ export default function TodoList() {
     const [calendarTodos, setCalendarTodos] = useState({});
     const [selectedCalendarTodo, setSelectedCalendarTodo] = useState(null);
     const [showTodoDetailsModal, setShowTodoDetailsModal] = useState(false);
+    const [formData, setFormData] = useState({});
+    const [showForm, setShowForm] = useState(false);
 
-    // Memoize fetchTodos to prevent unnecessary recreations
     const fetchTodos = useCallback(async (userId, sort) => {
         try {
             const todosResponse = await axios.get(
@@ -43,39 +43,42 @@ export default function TodoList() {
         }
     }, []);
 
-    // Update fetchCalendarTodos with better date handling
-    const fetchCalendarTodos = useCallback(async (year, month) => {
+    const fetchCalendarTodos = useCallback(async (year, month, shouldMerge = false) => {
         try {
-            console.log(`Fetching todos for ${year}-${month}`);
             const response = await axios.get(
                 `${process.env.REACT_APP_BACKEND_URL}/todo/calendar/${userId}?year=${year}&month=${month}`,
                 { withCredentials: true }
             );
             
-            // Organize todos by day of month with proper date handling
             const todosByDate = {};
             response.data.forEach(todo => {
                 if (todo.dueDate) {
-                    // Create a date object and handle timezone issues
                     const dueDate = new Date(todo.dueDate);
-                    // Adjust for timezone if needed
                     const localDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
-                    const day = localDate.getDate();
                     
-                    if (!todosByDate[day]) {
-                        todosByDate[day] = [];
+                    const day = localDate.getDate();
+                    const todoMonth = localDate.getMonth() + 1;
+                    const todoYear = localDate.getFullYear();
+                    
+                    const dateKey = `${todoYear}-${todoMonth}-${day}`;
+                    
+                    if (!todosByDate[dateKey]) {
+                        todosByDate[dateKey] = [];
                     }
-                    todosByDate[day].push(todo);
+                    todosByDate[dateKey].push(todo);
                 }
             });
             
-            setCalendarTodos(todosByDate);
+            if (shouldMerge) {
+                setCalendarTodos(prev => ({...prev, ...todosByDate}));
+            } else {
+                setCalendarTodos(todosByDate);
+            }
         } catch (error) {
             console.error('Error fetching calendar todos:', error);
         }
     }, [userId]);
 
-    // Initial data loading
     useEffect(() => {
         const fetchUserAndTodos = async () => {
             try {
@@ -97,14 +100,12 @@ export default function TodoList() {
         fetchUserAndTodos();
     }, [fetchTodos, sortBy]);
 
-    // Fetch todos when sort or userId changes
     useEffect(() => {
         if (userId) {
             fetchTodos(userId, sortBy);
         }
     }, [sortBy, userId, fetchTodos]);
 
-    // Calendar data loading
     useEffect(() => {
         if (userId && viewMode === 'calendar') {
             fetchCalendarTodos(
@@ -114,7 +115,6 @@ export default function TodoList() {
         }
     }, [viewMode, calendarDate, userId, fetchCalendarTodos]);
 
-    // Celebration effect
     useEffect(() => {
         if (todos.length > 0 && todos.every(todo => todo.completed)) {
             if (!celebrationShown) {
@@ -253,11 +253,20 @@ export default function TodoList() {
             newDate.setMonth(newDate.getMonth() + 1);
         }
         setCalendarDate(newDate);
+        
+        fetchCalendarTodos(newDate.getFullYear(), newDate.getMonth() + 1);
     };
 
     const handleCalendarTodoClick = (todo) => {
-        setSelectedCalendarTodo(todo);
+        const todoToShow = {...todo};
+        
+        setSelectedCalendarTodo(todoToShow);
         setShowTodoDetailsModal(true);
+    };
+
+    const handleCalendarDateChange = (date) => {
+        setCalendarDate(date);
+        fetchCalendarTodos(date.getFullYear(), date.getMonth() + 1);
     };
 
     const dismissCelebration = () => {
@@ -266,6 +275,45 @@ export default function TodoList() {
 
     const confirmDelete = (todoId) => {
         setConfirmingDeleteId(todoId);
+    };
+
+    const handleEditTodo = (todo) => {
+        
+        setIsFormVisible(false);
+        
+        setFormData({
+            _id: todo._id,
+            title: todo.title,
+            description: todo.description,
+            dueDate: todo.dueDate ? new Date(todo.dueDate).toISOString().split('T')[0] : '',
+            priority: todo.priority || 'medium',
+            completed: todo.completed || false
+        });
+        
+        setShowForm(true);
+    };
+
+    const handleDeleteTodo = async (todoId) => {
+        try {
+            if (window.confirm('Are you sure you want to delete this todo?')) {
+                await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, {
+                    withCredentials: true
+                });
+                
+                setTodos(todos.filter(todo => todo._id !== todoId));
+                setShowTodoDetailsModal(false);
+                
+                if (viewMode === 'calendar') {
+                    fetchCalendarTodos(
+                        calendarDate.getFullYear(),
+                        calendarDate.getMonth() + 1
+                    );
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting todo:', error);
+            setError('Failed to delete todo');
+        }
     };
     
     if (loading) return <div>Loading...</div>;
@@ -323,6 +371,20 @@ export default function TodoList() {
                     onCancel={() => setIsFormVisible(false)}
                 />
             )}
+
+            {showForm && !isFormVisible && (
+                <TodoForm 
+                    onSubmit={(formData) => {
+                        if (formData._id) {
+                            handleUpdateTodo(formData._id, formData);
+                        }
+                        setShowForm(false);
+                    }}
+                    initialData={formData}
+                    onCancel={() => setShowForm(false)}
+                    isEditMode={true}
+                />
+            )}
             
             {viewMode === 'calendar' ? (
                 <TodoCalendar 
@@ -330,6 +392,7 @@ export default function TodoList() {
                     calendarTodos={calendarTodos}
                     onNavigate={handleCalendarNavigate}
                     onTodoClick={handleCalendarTodoClick}
+                    onDateChange={handleCalendarDateChange}
                 />
             ) : (
                 todos.length === 0 ? (
@@ -358,13 +421,16 @@ export default function TodoList() {
                 <CelebrationEffect onDismiss={dismissCelebration} />
             )}
             
-            {showTodoDetailsModal && (
+            {showTodoDetailsModal && selectedCalendarTodo && (
                 <TodoDetailsModal
                     todo={selectedCalendarTodo}
-                    onClose={() => setShowTodoDetailsModal(false)}
-                    onEdit={handleEditClick}
+                    onClose={() => {
+                        setShowTodoDetailsModal(false);
+                        setTimeout(() => setSelectedCalendarTodo(null), 100);
+                    }}
+                    onEdit={handleEditTodo}
                     onToggleComplete={handleToggleComplete}
-                    onDelete={confirmDelete}
+                    onDelete={handleDeleteTodo}
                 />
             )}
         </div>

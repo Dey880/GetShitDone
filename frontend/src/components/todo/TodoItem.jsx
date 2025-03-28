@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './TodoItem.css';
 
 const TodoItem = ({ 
     todo, 
@@ -16,7 +17,6 @@ const TodoItem = ({
     const [editDueDate, setEditDueDate] = useState('');
     const [editPriority, setEditPriority] = useState('');
 
-    // Initialize edit states when entering edit mode
     React.useEffect(() => {
         if (isEditing) {
             setEditTitle(todo.title);

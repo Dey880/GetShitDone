@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import './CelebrationEffect.css';
 
 const CelebrationEffect = ({ onDismiss }) => {
     const renderFireworks = () => {

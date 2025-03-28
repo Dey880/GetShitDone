@@ -8,7 +8,6 @@ const todoController = {
         try {
             let query = { user: id };
             
-            // Add date range filtering if provided
             if (startDate && endDate) {
                 query.dueDate = { 
                     $gte: new Date(startDate), 
@@ -20,20 +19,18 @@ const todoController = {
                 query.dueDate = { $lte: new Date(endDate) };
             }
             
-            // Create query
             let todosQuery = Todo.find(query);
             
-            // Add sorting
             if (sortBy === 'dueDate') {
-                todosQuery = todosQuery.sort({ dueDate: 1 }); // Ascending date
+                todosQuery = todosQuery.sort({ dueDate: 1 });
             } else if (sortBy === 'dueDateDesc') {
-                todosQuery = todosQuery.sort({ dueDate: -1 }); // Descending date
+                todosQuery = todosQuery.sort({ dueDate: -1 });
             } else if (sortBy === 'priority') {
-                todosQuery = todosQuery.sort({ priority: -1 }); // High to low
+                todosQuery = todosQuery.sort({ priority: -1 });
             } else if (sortBy === 'createdAt') {
                 todosQuery = todosQuery.sort({ createdAt: 1 });
             } else {
-                todosQuery = todosQuery.sort({ createdAt: -1 }); // Default: newest first
+                todosQuery = todosQuery.sort({ createdAt: -1 });
             }
             
             const todos = await todosQuery.exec();
@@ -49,13 +46,9 @@ const todoController = {
         const { year, month } = req.query;
         
         try {
-            // Create start and end dates for the month
-            // Month is 1-based in the query but 0-based in JavaScript Date
-            const startDate = new Date(parseInt(year), parseInt(month) - 1, 1); 
-            // Get the last day of the requested month
+            const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
             const endDate = new Date(parseInt(year), parseInt(month), 0);
             
-            // Set time to beginning and end of day to ensure we catch all todos
             startDate.setHours(0, 0, 0, 0);
             endDate.setHours(23, 59, 59, 999);
             

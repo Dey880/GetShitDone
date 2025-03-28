@@ -1,0 +1,154 @@
+.todo-form-container {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 3px solid #000;
+  border-radius: 5px;
+  animation: slideDown 0.3s ease-out;
+  position: relative;
+  z-index: 1100;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 3px solid #000;
+  font-size: 16px;
+  transition: box-shadow 0.3s ease;
+}
+
+.form-input:focus, .form-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 3px solid #000;
+  min-height: 100px;
+  font-size: 16px;
+  transition: box-shadow 0.3s ease;
+}
+
+.submit-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.submit-button:hover {
+  background-color: #323232;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 40px;
+  line-height: 0;
+  transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 3px solid #000;
+  font-size: 16px;
+  height: 50px;
+  transition: box-shadow 0.3s ease;
+  background-color: #fff;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+
+.form-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+@media screen and (max-width: 768px) {
+  .todo-form-container {
+    padding: 15px;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .submit-button, .cancel-button {
+    width: 100%;
+    margin-bottom: 10px;
+    height: 44px;
+  }
+  
+  .form-input, .form-textarea {
+    font-size: 16px;
+    padding: 12px;
+  }
+  
+  .form-select {
+    font-size: 16px;
+    padding: 12px;
+    height: 52px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .todo-form-container {
+    padding: 12px;
+  }
+}

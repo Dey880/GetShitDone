@@ -1,39 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import './TodoForm.css';
 
-const TodoForm = ({ onSubmit, onCancel }) => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [dueDate, setDueDate] = useState('');
-    const [priority, setPriority] = useState('medium');
+const TodoForm = ({ onSubmit, onCancel, initialData = {}, isEditMode = false }) => {
+    const [title, setTitle] = useState(initialData.title || '');
+    const [description, setDescription] = useState(initialData.description || '');
+    const [dueDate, setDueDate] = useState(initialData.dueDate || '');
+    const [priority, setPriority] = useState(initialData.priority || 'medium');
+    
+    useEffect(() => {
+        if (initialData.title) setTitle(initialData.title);
+        if (initialData.description) setDescription(initialData.description);
+        if (initialData.dueDate) setDueDate(initialData.dueDate);
+        if (initialData.priority) setPriority(initialData.priority);
+    }, [initialData]);
 
     const formatDateForServer = (dateString) => {
         if (!dateString) return null;
         
-        // Create a date object based on the input
         const date = new Date(dateString);
-        // Format it as YYYY-MM-DD to ensure consistency
         return date.toISOString().split('T')[0];
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit({
+            _id: initialData._id,
             title,
             description,
             dueDate: formatDateForServer(dueDate),
             priority
         });
 
-        // Reset form
-        setTitle('');
-        setDescription('');
-        setDueDate('');
-        setPriority('medium');
+        if (!isEditMode) {
+            setTitle('');
+            setDescription('');
+            setDueDate('');
+            setPriority('medium');
+        }
     };
 
     return (
         <div className="todo-form-container">
-            <h2>Add New Todo</h2>
+            <h2>{isEditMode ? 'Edit Todo' : 'Add New Todo'}</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="title" className="form-label">Title:</label>
@@ -66,12 +74,12 @@ const TodoForm = ({ onSubmit, onCancel }) => {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="priority" className="form-label">Priority:</label>
+                    <label htmlFor="priority" className="form-label">Priority</label>
                     <select
                         id="priority"
+                        className="form-select"
                         value={priority}
                         onChange={(e) => setPriority(e.target.value)}
-                        className="form-input"
                     >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -83,7 +91,7 @@ const TodoForm = ({ onSubmit, onCancel }) => {
                         type="submit"
                         className="submit-button"
                     >
-                        Add Todo
+                        {isEditMode ? 'Save Changes' : 'Add Todo'}
                     </button>
                     <button 
                         type="button"
