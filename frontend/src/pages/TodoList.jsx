@@ -15,6 +15,8 @@ export default function TodoList() {
     const [editTitle, setEditTitle] = useState('');
     const [editDescription, setEditDescription] = useState('');
     const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+    const [showCelebration, setShowCelebration] = useState(false);
+    const [celebrationShown, setCelebrationShown] = useState(false);
     
     useEffect(() => {
         const fetchUserAndTodos = async () => {
@@ -40,6 +42,65 @@ export default function TodoList() {
         
         fetchUserAndTodos();
     }, []);
+    
+    useEffect(() => {
+        if (todos.length > 0 && todos.every(todo => todo.completed)) {
+            if (!celebrationShown) {
+                setShowCelebration(true);
+                setCelebrationShown(true);
+                
+                const timer = setTimeout(() => {
+                    setShowCelebration(false);
+                }, 8000);
+                
+                return () => clearTimeout(timer);
+            }
+        } else {
+            setCelebrationShown(false);
+        }
+    }, [todos, celebrationShown]);
+
+    const dismissCelebration = () => {
+        setShowCelebration(false);
+    };
+
+    const renderFireworks = () => {
+        return Array.from({ length: 30 }).map((_, index) => {
+            const left = Math.random() * 100;
+            const animationDelay = Math.random() * 3;
+            const animationDuration = 1 + Math.random() * 2;
+            
+            return (
+                <div 
+                    key={index}
+                    className="firework"
+                    style={{
+                        left: `${left}%`,
+                        animationDelay: `${animationDelay}s`,
+                        animationDuration: `${animationDuration}s`
+                    }}
+                />
+            );
+        });
+    };
+
+    const CelebrationEffect = () => (
+        <>
+            <div className="celebration-container">
+                {renderFireworks()}
+            </div>
+            <div className="celebration-message">
+                <h2>🎉 All Tasks Completed! 🎉</h2>
+                <p>Congratulations! You've completed all your tasks!</p>
+                <button 
+                    className="dismiss-celebration"
+                    onClick={dismissCelebration}
+                >
+                    Close
+                </button>
+            </div>
+        </>
+    );
     
     const confirmDelete = (todoId) => {
         setConfirmingDeleteId(todoId);
@@ -204,7 +265,6 @@ export default function TodoList() {
                     {todos.map(todo => (
                         <li key={todo._id} className={`todo-item ${todo.completed ? 'completed' : ''} ${todo.deleting ? 'deleting' : ''}`}>
                             {editingTodoId === todo._id ? (
-                                // Edit form
                                 <div className="todo-edit-form">
                                     <div className="form-group">
                                         <label htmlFor={`edit-title-${todo._id}`} className="form-label">Title:</label>
@@ -296,6 +356,8 @@ export default function TodoList() {
                     ))}
                 </ul>
             )}
+            
+            {showCelebration && <CelebrationEffect />}
         </div>
     );
 }

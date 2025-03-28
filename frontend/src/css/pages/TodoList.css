@@ -294,3 +294,250 @@
     padding: 0;
   }
 }
+
+/* Fireworks celebration effect */
+.celebration-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.firework {
+  position: absolute;
+  bottom: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.firework::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: explode 1.5s ease-out forwards;
+}
+
+.firework::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 
+    0 0 20px 10px currentColor,
+    0 0 40px 20px currentColor;
+  opacity: 0;
+  animation: sparkle 1.5s ease-out forwards;
+}
+
+@keyframes explode {
+  0% {
+    transform: scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(30);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.firework:nth-child(5n+1) { color: #ff0000; }
+.firework:nth-child(5n+2) { color: #00ff00; }
+.firework:nth-child(5n+3) { color: #0000ff; }
+.firework:nth-child(5n+4) { color: #ffff00; }
+.firework:nth-child(5n+5) { color: #ff00ff; }
+
+.celebration-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 20px 30px;
+  border-radius: 10px;
+  border: 3px solid #000;
+  text-align: center;
+  animation: popIn 0.5s ease-out forwards;
+  z-index: 1001;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.celebration-message h2 {
+  margin-top: 0;
+  font-size: 28px;
+}
+
+.dismiss-celebration {
+  background-color: rgba(255, 255, 255, 0);
+  color: #000;
+  border: 3px solid #000;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.dismiss-celebration:hover {
+  background-color: #323232;
+  color: white;
+}
+
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive styles for tablets and mobile devices */
+@media screen and (max-width: 768px) {
+  .todo-container {
+    padding: 15px;
+    width: 100%;
+  }
+  
+  /* Add these styles for consistent heading alignment */
+  .todo-container h1,
+  .todo-container h2 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  .todo-form-container {
+    padding: 15px;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .submit-button, .cancel-button {
+    width: 100%;
+    margin-bottom: 10px;
+    height: 44px;
+  }
+  
+  .todo-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .edit-button, .delete-button {
+    width: 100%;
+    margin-bottom: 5px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .toggle-form-button {
+    height: auto;
+    padding: 15px;
+    line-height: 1.2;
+  }
+  
+  .todo-item {
+    padding: 12px;
+  }
+  
+  .form-input, .form-textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    padding: 12px;
+  }
+  
+  .celebration-message {
+    width: 85%;
+    max-width: 300px;
+    padding: 15px;
+  }
+  
+  .celebration-message h2 {
+    font-size: 20px;
+  }
+  
+  .dismiss-celebration {
+    width: 100%;
+    padding: 12px;
+    height: auto;
+    line-height: 1.2;
+  }
+}
+
+/* Styles for very small mobile devices */
+@media screen and (max-width: 480px) {
+  .todo-container {
+    padding: 10px;
+  }
+  
+  .todo-form-container {
+    padding: 12px;
+  }
+  
+  .todo-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .todo-checkbox {
+    margin-bottom: 10px;
+    transform: scale(1.2); /* Larger checkbox for better touch target */
+  }
+  
+  .todo-title {
+    width: 100%;
+  }
+  
+  /* Make the confirmation dialog better on small screens */
+  .confirmation-dialog {
+    width: 90%;
+    left: 5%;
+    padding: 15px;
+  }
+  
+  /* Optimize fireworks effect for mobile */
+  @keyframes explode {
+    0% {
+      transform: scale(0);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(15); /* Smaller explosion size for mobile */
+      opacity: 0;
+    }
+  }
+}
