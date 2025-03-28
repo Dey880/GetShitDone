@@ -1,6 +1,13 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import "../css/pages/TodoList.css";
+
+// Import components
+import TodoForm from '../components/todo/TodoForm';
+import TodoItem from '../components/todo/TodoItem';
+import TodoCalendar from '../components/todo/TodoCalendar';
+import TodoDetailsModal from '../components/todo/TodoDetailsModal';
+import CelebrationEffect from '../components/todo/CelebrationEffect';
 
 export default function TodoList() {
     const [todos, setTodos] = useState([]);
@@ -8,16 +15,67 @@ export default function TodoList() {
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState('');
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingTodoId, setEditingTodoId] = useState(null);
-    const [editTitle, setEditTitle] = useState('');
-    const [editDescription, setEditDescription] = useState('');
     const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
     const [showCelebration, setShowCelebration] = useState(false);
     const [celebrationShown, setCelebrationShown] = useState(false);
-    
+    const [viewMode, setViewMode] = useState('list');
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [calendarDate, setCalendarDate] = useState(new Date());
+    const [calendarTodos, setCalendarTodos] = useState({});
+    const [selectedCalendarTodo, setSelectedCalendarTodo] = useState(null);
+    const [showTodoDetailsModal, setShowTodoDetailsModal] = useState(false);
+
+    // Memoize fetchTodos to prevent unnecessary recreations
+    const fetchTodos = useCallback(async (userId, sort) => {
+        try {
+            const todosResponse = await axios.get(
+                `${process.env.REACT_APP_BACKEND_URL}/todo/${userId}?sortBy=${sort}`, 
+                { withCredentials: true }
+            );
+            setTodos(todosResponse.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching todos:', error);
+            setError('Failed to load todos');
+            setLoading(false);
+        }
+    }, []);
+
+    // Update fetchCalendarTodos with better date handling
+    const fetchCalendarTodos = useCallback(async (year, month) => {
+        try {
+            console.log(`Fetching todos for ${year}-${month}`);
+            const response = await axios.get(
+                `${process.env.REACT_APP_BACKEND_URL}/todo/calendar/${userId}?year=${year}&month=${month}`,
+                { withCredentials: true }
+            );
+            
+            // Organize todos by day of month with proper date handling
+            const todosByDate = {};
+            response.data.forEach(todo => {
+                if (todo.dueDate) {
+                    // Create a date object and handle timezone issues
+                    const dueDate = new Date(todo.dueDate);
+                    // Adjust for timezone if needed
+                    const localDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
+                    const day = localDate.getDate();
+                    
+                    if (!todosByDate[day]) {
+                        todosByDate[day] = [];
+                    }
+                    todosByDate[day].push(todo);
+                }
+            });
+            
+            setCalendarTodos(todosByDate);
+        } catch (error) {
+            console.error('Error fetching calendar todos:', error);
+        }
+    }, [userId]);
+
+    // Initial data loading
     useEffect(() => {
         const fetchUserAndTodos = async () => {
             try {
@@ -28,11 +86,7 @@ export default function TodoList() {
                 setUserId(userId);
                 setUser(userResponse.data.user.displayname);
                 
-                const todosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/todo/${userId}`, {
-                    withCredentials: true
-                });
-                setTodos(todosResponse.data);
-                setLoading(false);
+                fetchTodos(userId, sortBy);
             } catch (err) {
                 console.error('Error fetching data:', err);
                 setError('Failed to load todos');
@@ -41,8 +95,26 @@ export default function TodoList() {
         };
         
         fetchUserAndTodos();
-    }, []);
-    
+    }, [fetchTodos, sortBy]);
+
+    // Fetch todos when sort or userId changes
+    useEffect(() => {
+        if (userId) {
+            fetchTodos(userId, sortBy);
+        }
+    }, [sortBy, userId, fetchTodos]);
+
+    // Calendar data loading
+    useEffect(() => {
+        if (userId && viewMode === 'calendar') {
+            fetchCalendarTodos(
+                calendarDate.getFullYear(),
+                calendarDate.getMonth() + 1
+            );
+        }
+    }, [viewMode, calendarDate, userId, fetchCalendarTodos]);
+
+    // Celebration effect
     useEffect(() => {
         if (todos.length > 0 && todos.every(todo => todo.completed)) {
             if (!celebrationShown) {
@@ -60,50 +132,78 @@ export default function TodoList() {
         }
     }, [todos, celebrationShown]);
 
-    const dismissCelebration = () => {
-        setShowCelebration(false);
-    };
-
-    const renderFireworks = () => {
-        return Array.from({ length: 30 }).map((_, index) => {
-            const left = Math.random() * 100;
-            const animationDelay = Math.random() * 3;
-            const animationDuration = 1 + Math.random() * 2;
+    const handleAddTodo = async (todoData) => {
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/todo`, {
+                id: userId,
+                ...todoData
+            }, {
+                withCredentials: true
+            });
             
-            return (
-                <div 
-                    key={index}
-                    className="firework"
-                    style={{
-                        left: `${left}%`,
-                        animationDelay: `${animationDelay}s`,
-                        animationDuration: `${animationDuration}s`
-                    }}
-                />
-            );
-        });
+            setTodos([...todos, response.data.todo]);
+            setIsFormVisible(false);
+            
+            if (viewMode === 'calendar') {
+                fetchCalendarTodos(
+                    calendarDate.getFullYear(),
+                    calendarDate.getMonth() + 1
+                );
+            }
+        } catch (err) {
+            console.error('Error creating todo:', err);
+            setError('Failed to create todo');
+        }
     };
 
-    const CelebrationEffect = () => (
-        <>
-            <div className="celebration-container">
-                {renderFireworks()}
-            </div>
-            <div className="celebration-message">
-                <h2>🎉 All Tasks Completed! 🎉</h2>
-                <p>Congratulations! You've completed all your tasks!</p>
-                <button 
-                    className="dismiss-celebration"
-                    onClick={dismissCelebration}
-                >
-                    Close
-                </button>
-            </div>
-        </>
-    );
-    
-    const confirmDelete = (todoId) => {
-        setConfirmingDeleteId(todoId);
+    const handleUpdateTodo = async (todoId, todoData) => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, todoData, {
+                withCredentials: true
+            });
+            
+            setTodos(todos.map(todo => 
+                todo._id === todoId 
+                    ? { ...todo, ...todoData } 
+                    : todo
+            ));
+            
+            setEditingTodoId(null);
+            
+            if (viewMode === 'calendar') {
+                fetchCalendarTodos(
+                    calendarDate.getFullYear(),
+                    calendarDate.getMonth() + 1
+                );
+            }
+        } catch (err) {
+            console.error('Error updating todo:', err);
+            setError('Failed to update todo');
+        }
+    };
+
+    const handleToggleComplete = async (todoId, currentStatus) => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, {
+                completed: !currentStatus
+            }, {
+                withCredentials: true
+            });
+            
+            setTodos(todos.map(todo => 
+                todo._id === todoId ? {...todo, completed: !todo.completed} : todo
+            ));
+            
+            if (viewMode === 'calendar') {
+                fetchCalendarTodos(
+                    calendarDate.getFullYear(),
+                    calendarDate.getMonth() + 1
+                );
+            }
+        } catch (err) {
+            console.error('Error updating todo status:', err);
+            setError('Failed to update todo status');
+        }
     };
 
     const handleDelete = async (todoId) => {
@@ -119,6 +219,13 @@ export default function TodoList() {
                 });
                 setTodos(todos.filter(todo => todo._id !== todoId));
                 setEditingTodoId(null);
+                
+                if (viewMode === 'calendar') {
+                    fetchCalendarTodos(
+                        calendarDate.getFullYear(),
+                        calendarDate.getMonth() + 1
+                    );
+                }
             }, 500);
         } catch (err) {
             console.error('Error deleting todo:', err);
@@ -126,78 +233,39 @@ export default function TodoList() {
         }
     };
 
-    const handleToggleComplete = async (todoId, currentStatus) => {
-        try {
-            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, {
-                completed: !currentStatus
-            }, {
-                withCredentials: true
-            });
-            setTodos(todos.map(todo => 
-                todo._id === todoId ? {...todo, completed: !todo.completed} : todo
-            ));
-        } catch (err) {
-            console.error('Error updating todo status:', err);
-            setError('Failed to update todo status');
-        }
-    };
-    
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/todo`, {
-                id: userId,
-                title: title,
-                description: description
-            }, {
-                withCredentials: true
-            });
-            setTodos([...todos, response.data.todo]);
-            
-            setTitle('');
-            setDescription('');
-            
-            setIsFormVisible(false);
-        } catch (err) {
-            console.error('Error creating todo:', err);
-            setError('Failed to create todo');
-        }
-    };
-    
     const toggleFormVisibility = () => {
         setIsFormVisible(!isFormVisible);
     };
 
     const handleEditClick = (todo) => {
         setEditingTodoId(todo._id);
-        setEditTitle(todo.title);
-        setEditDescription(todo.description);
     };
 
     const handleCancelEdit = () => {
         setEditingTodoId(null);
     };
 
-    const handleSaveEdit = async (todoId) => {
-        try {
-            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, {
-                title: editTitle,
-                description: editDescription
-            }, {
-                withCredentials: true
-            });
-            
-            setTodos(todos.map(todo => 
-                todo._id === todoId 
-                    ? {...todo, title: editTitle, description: editDescription} 
-                    : todo
-            ));
-            
-            setEditingTodoId(null);
-        } catch (err) {
-            console.error('Error updating todo:', err);
-            setError('Failed to update todo');
+    const handleCalendarNavigate = (direction) => {
+        const newDate = new Date(calendarDate);
+        if (direction === 'prev') {
+            newDate.setMonth(newDate.getMonth() - 1);
+        } else {
+            newDate.setMonth(newDate.getMonth() + 1);
         }
+        setCalendarDate(newDate);
+    };
+
+    const handleCalendarTodoClick = (todo) => {
+        setSelectedCalendarTodo(todo);
+        setShowTodoDetailsModal(true);
+    };
+
+    const dismissCelebration = () => {
+        setShowCelebration(false);
+    };
+
+    const confirmDelete = (todoId) => {
+        setConfirmingDeleteId(todoId);
     };
     
     if (loading) return <div>Loading...</div>;
@@ -208,6 +276,40 @@ export default function TodoList() {
             <h1>Welcome, {user}!</h1>
             <h2>Get shit done today!</h2>
             
+            <div className="view-controls">
+                <div className="view-toggle">
+                    <button 
+                        className={`view-button ${viewMode === 'list' ? 'active' : ''}`}
+                        onClick={() => setViewMode('list')}
+                    >
+                        List View
+                    </button>
+                    <button 
+                        className={`view-button ${viewMode === 'calendar' ? 'active' : ''}`}
+                        onClick={() => setViewMode('calendar')}
+                    >
+                        Calendar View
+                    </button>
+                </div>
+                
+                {viewMode === 'list' && (
+                    <div className="sort-controls">
+                        <label htmlFor="sortBy">Sort by:</label>
+                        <select 
+                            id="sortBy" 
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="sort-select"
+                        >
+                            <option value="createdAt">Date Created (Newest)</option>
+                            <option value="dueDate">Due Date (Ascending)</option>
+                            <option value="dueDateDesc">Due Date (Descending)</option>
+                            <option value="priority">Priority</option>
+                        </select>
+                    </div>
+                )}
+            </div>
+            
             <button 
                 onClick={toggleFormVisibility} 
                 className="toggle-form-button"
@@ -216,148 +318,55 @@ export default function TodoList() {
             </button>
             
             {isFormVisible && (
-                <div className="todo-form-container">
-                    <h2>Add New Todo</h2>
-                    <form onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label htmlFor="title" className="form-label">Title:</label>
-                            <input 
-                                type="text" 
-                                id="title"
-                                value={title} 
-                                onChange={(e) => setTitle(e.target.value)} 
-                                required
-                                className="form-input"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="description" className="form-label">Description:</label>
-                            <textarea 
-                                id="description"
-                                value={description} 
-                                onChange={(e) => setDescription(e.target.value)} 
-                                className="form-textarea"
-                            />
-                        </div>
-                        <div className="form-buttons">
-                            <button 
-                                type="submit"
-                                className="submit-button"
-                            >
-                                Add Todo
-                            </button>
-                            <button 
-                                type="button"
-                                className="cancel-button"
-                                onClick={() => setIsFormVisible(false)}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                <TodoForm 
+                    onSubmit={handleAddTodo}
+                    onCancel={() => setIsFormVisible(false)}
+                />
             )}
             
-            {todos.length === 0 ? (
-                <p>No todos found</p>
+            {viewMode === 'calendar' ? (
+                <TodoCalendar 
+                    calendarDate={calendarDate}
+                    calendarTodos={calendarTodos}
+                    onNavigate={handleCalendarNavigate}
+                    onTodoClick={handleCalendarTodoClick}
+                />
             ) : (
-                <ul className="todo-list">
-                    {todos.map(todo => (
-                        <li key={todo._id} className={`todo-item ${todo.completed ? 'completed' : ''} ${todo.deleting ? 'deleting' : ''}`}>
-                            {editingTodoId === todo._id ? (
-                                <div className="todo-edit-form">
-                                    <div className="form-group">
-                                        <label htmlFor={`edit-title-${todo._id}`} className="form-label">Title:</label>
-                                        <input 
-                                            type="text" 
-                                            id={`edit-title-${todo._id}`}
-                                            value={editTitle} 
-                                            onChange={(e) => setEditTitle(e.target.value)} 
-                                            className="form-input"
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor={`edit-desc-${todo._id}`} className="form-label">Description:</label>
-                                        <textarea 
-                                            id={`edit-desc-${todo._id}`}
-                                            value={editDescription} 
-                                            onChange={(e) => setEditDescription(e.target.value)} 
-                                            className="form-textarea"
-                                        />
-                                    </div>
-                                    <div className="form-buttons">
-                                        <button 
-                                            onClick={() => handleSaveEdit(todo._id)}
-                                            className="submit-button"
-                                        >
-                                            Save
-                                        </button>
-                                        <button 
-                                            onClick={handleCancelEdit}
-                                            className="cancel-button"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button 
-                                            onClick={() => confirmDelete(todo._id)}
-                                            className="delete-button"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="todo-header">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={todo.completed} 
-                                            onChange={() => handleToggleComplete(todo._id, todo.completed)}
-                                            className="todo-checkbox"
-                                        />
-                                        <h3 className="todo-title">{todo.title}</h3>
-                                    </div>
-                                    <p className="todo-description">{todo.description}</p>
-                                    <p className="todo-status">Status: {todo.completed ? 'Completed' : 'Pending'}</p>
-                                    <div className="todo-actions">
-                                        <button 
-                                            onClick={() => handleEditClick(todo)}
-                                            className="edit-button"
-                                        >
-                                            Edit
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                            
-                            {confirmingDeleteId === todo._id && (
-                                <div className="delete-confirmation-overlay">
-                                    <div className="delete-confirmation-modal">
-                                        <h3>Are you sure?</h3>
-                                        <p>Do you really want to delete this todo?</p>
-                                        <div className="confirmation-buttons">
-                                            <button 
-                                                onClick={() => handleDelete(todo._id)}
-                                                className="confirm-delete-button"
-                                            >
-                                                Yes, Delete
-                                            </button>
-                                            <button 
-                                                onClick={() => setConfirmingDeleteId(null)}
-                                                className="cancel-delete-button"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </li>
-                    ))}
-                </ul>
+                todos.length === 0 ? (
+                    <p>No todos found</p>
+                ) : (
+                    <ul className="todo-list">
+                        {todos.map(todo => (
+                            <TodoItem 
+                                key={todo._id}
+                                todo={todo}
+                                isEditing={editingTodoId === todo._id}
+                                isConfirmingDelete={confirmingDeleteId === todo._id}
+                                onEditClick={handleEditClick}
+                                onCancelEdit={handleCancelEdit}
+                                onSaveEdit={handleUpdateTodo}
+                                onToggleComplete={handleToggleComplete}
+                                onConfirmDelete={confirmDelete}
+                                onDelete={handleDelete}
+                            />
+                        ))}
+                    </ul>
+                )
             )}
             
-            {showCelebration && <CelebrationEffect />}
+            {showCelebration && (
+                <CelebrationEffect onDismiss={dismissCelebration} />
+            )}
+            
+            {showTodoDetailsModal && (
+                <TodoDetailsModal
+                    todo={selectedCalendarTodo}
+                    onClose={() => setShowTodoDetailsModal(false)}
+                    onEdit={handleEditClick}
+                    onToggleComplete={handleToggleComplete}
+                    onDelete={confirmDelete}
+                />
+            )}
         </div>
     );
 }
