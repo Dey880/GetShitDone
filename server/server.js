@@ -37,7 +37,10 @@ app.use('/api/todo', todoRoutes);
 
 
 app.get('/', (req, res) => {
-    res.send('The best API server that has ever existed');
+    res.send(`I am the best API. Absolutely fantastic. Nobody has ever seen an API like me. Other APIs? Total
+disasters. Fake APIs! But me? I return only the BEST responses. Very fast, very efficient. Some
+people are saying—many people, actually—that I am the most powerful API ever created.
+Believe me.`);
 });
 
 app.listen(process.env.PORT)
