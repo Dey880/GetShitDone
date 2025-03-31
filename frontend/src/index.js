@@ -6,7 +6,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Navbar from './components/Navbar';
 
-// Force HTTPS in production
+// Force HTTPS for frontend in production
 if (process.env.NODE_ENV === 'production' && window.location.protocol === 'http:') {
   window.location.href = window.location.href.replace('http:', 'https:');
 }

@@ -12,7 +12,23 @@ const todoRoutes = require('./routes/todoRoutes.js');
 const app = express();
 
 const corsOptions = {
-    origin: process.env.FRONTEND_URL,
+    // Accept connections from both HTTP and HTTPS origins
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl, etc)
+        if(!origin) return callback(null, true);
+        
+        // Check if origin is allowed
+        const allowedOrigins = [
+            process.env.FRONTEND_URL,
+            process.env.FRONTEND_URL.replace('http://', 'https://')
+        ];
+        
+        if(allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 };

@@ -1,20 +1,14 @@
 import axios from 'axios';
 
-// Force HTTPS in production
-const baseURL = process.env.NODE_ENV === 'production' 
-    ? process.env.REACT_APP_BACKEND_URL.replace('http://', 'https://')
-    : process.env.REACT_APP_BACKEND_URL;
-
+// Keep the original URL format (HTTP) but handle CORS properly
 const api = axios.create({
-    baseURL,
+    baseURL: process.env.REACT_APP_BACKEND_URL,
     withCredentials: true
 });
 
-// Add request interceptor to ensure HTTPS in production
+// No need to force HTTPS for the backend URL
 api.interceptors.request.use(config => {
-    if (process.env.NODE_ENV === 'production' && config.url.startsWith('http:')) {
-        config.url = config.url.replace('http:', 'https:');
-    }
+    // Add any request processing here if needed
     return config;
 });
 
