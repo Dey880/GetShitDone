@@ -1,42 +1,37 @@
 import '../css/components/Form.css';
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 
 export default function Register() {
     const [displayname, setDisplayname] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [repeatPassword, setRepeatPassword] = useState("");
+    const [error, setError] = useState("");
 
     function handleSubmit(e) {
         e.preventDefault();
-        console.log("Environment Variables:", process.env);
-        console.error(`REACT_APP_BACKEND_URL ${process.env.REACT_APP_BACKEND_URL}`);
-        if (process.env.REACT_APP_BACKEND_URL === undefined) {
-            console.error("REACT_APP_BACKEND_URL environment variable is not set");
-            return;
-        } else {
-            axios.post(
-                `${process.env.REACT_APP_BACKEND_URL}/auth/register`,
-                { displayname, email, password, repeatPassword },
-                { withCredentials: true }
-            )
-            .then((response) => {
-                window.location.href = "/login";
-                console.log(response.data);
-                if (response.data.user) {
-                    window.location.href = "/todo";
-                }
-            })
-            .catch((error) => {
-                console.log(error.response.data);
-            });
-        }
+        
+        api.post(
+            '/auth/register',
+            { displayname, email, password, repeatPassword }
+        )
+        .then((response) => {
+            window.location.href = "/login";
+            if (response.data.user) {
+                window.location.href = "/todo";
+            }
+        })
+        .catch((error) => {
+            console.log(error.response?.data || error);
+            setError("Registration failed. Please check your information.");
+        });
     }
 
     return (
         <div className='form-container'>
             <h1>Register</h1>
+            {error && <div className="error-message">{error}</div>}
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"

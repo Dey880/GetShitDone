@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
+import api from '../utils/api';
 import '../css/components/Navbar.css';
 
 export default function Navbar() {
@@ -7,15 +7,13 @@ export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/user`, {
-            withCredentials: true
-        })
-        .then((response) => {
-            setResponse(response.data.user._id);
-        })
-        .catch((error) => {
-            console.error('Error fetching user:', error);
-        });
+        api.get('/auth/user')
+            .then((response) => {
+                setResponse(response.data.user._id);
+            })
+            .catch((error) => {
+                console.error('Error fetching user:', error);
+            });
     }, []);
 
     const toggleMenu = () => {

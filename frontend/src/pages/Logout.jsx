@@ -1,11 +1,9 @@
-import axios from 'axios';
 import { useEffect } from 'react';
+import api from '../utils/api';
 
 export default function Logout() {
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/logout`, {
-            withCredentials: true
-        })
+        api.get('/auth/logout')
         .then(() => {
             window.location.href = "/";
         })

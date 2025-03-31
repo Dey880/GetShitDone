@@ -1,6 +1,6 @@
-import axios from 'axios';
 import React, { useEffect, useState, useCallback } from 'react';
 import "../css/pages/TodoList.css";
+import api from '../utils/api';
 
 import TodoForm from '../components/todo/TodoForm';
 import TodoItem from '../components/todo/TodoItem';
@@ -30,9 +30,8 @@ export default function TodoList() {
 
     const fetchTodos = useCallback(async (userId, sort) => {
         try {
-            const todosResponse = await axios.get(
-                `${process.env.REACT_APP_BACKEND_URL}/todo/${userId}?sortBy=${sort}`, 
-                { withCredentials: true }
+            const todosResponse = await api.get(
+                `/todo/${userId}?sortBy=${sort}`
             );
             setTodos(todosResponse.data);
             setLoading(false);
@@ -45,9 +44,8 @@ export default function TodoList() {
 
     const fetchCalendarTodos = useCallback(async (year, month, shouldMerge = false) => {
         try {
-            const response = await axios.get(
-                `${process.env.REACT_APP_BACKEND_URL}/todo/calendar/${userId}?year=${year}&month=${month}`,
-                { withCredentials: true }
+            const response = await api.get(
+                `/todo/calendar/${userId}?year=${year}&month=${month}`
             );
             
             const todosByDate = {};
@@ -82,9 +80,7 @@ export default function TodoList() {
     useEffect(() => {
         const fetchUserAndTodos = async () => {
             try {
-                const userResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/user`, {
-                    withCredentials: true
-                });
+                const userResponse = await api.get('/auth/user');
                 const userId = userResponse.data.user._id;
                 setUserId(userId);
                 setUser(userResponse.data.user.displayname);
@@ -134,11 +130,9 @@ export default function TodoList() {
 
     const handleAddTodo = async (todoData) => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/todo`, {
+            const response = await api.post('/todo', {
                 id: userId,
                 ...todoData
-            }, {
-                withCredentials: true
             });
             
             setTodos([...todos, response.data.todo]);
@@ -158,9 +152,7 @@ export default function TodoList() {
 
     const handleUpdateTodo = async (todoId, todoData) => {
         try {
-            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, todoData, {
-                withCredentials: true
-            });
+            await api.put(`/todo/${todoId}`, todoData);
             
             setTodos(todos.map(todo => 
                 todo._id === todoId 
@@ -184,10 +176,8 @@ export default function TodoList() {
 
     const handleToggleComplete = async (todoId, currentStatus) => {
         try {
-            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, {
+            await api.put(`/todo/${todoId}`, {
                 completed: !currentStatus
-            }, {
-                withCredentials: true
             });
             
             setTodos(todos.map(todo => 
@@ -214,9 +204,7 @@ export default function TodoList() {
             ));
             
             setTimeout(async () => {
-                await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, {
-                    withCredentials: true
-                });
+                await api.delete(`/todo/${todoId}`);
                 setTodos(todos.filter(todo => todo._id !== todoId));
                 setEditingTodoId(null);
                 
@@ -296,9 +284,7 @@ export default function TodoList() {
     const handleDeleteTodo = async (todoId) => {
         try {
             if (window.confirm('Are you sure you want to delete this todo?')) {
-                await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/todo/${todoId}`, {
-                    withCredentials: true
-                });
+                await api.delete(`/todo/${todoId}`);
                 
                 setTodos(todos.filter(todo => todo._id !== todoId));
                 setShowTodoDetailsModal(false);

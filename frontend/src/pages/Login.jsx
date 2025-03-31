@@ -1,30 +1,35 @@
 import '../css/components/Form.css';
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
     function handleSubmit(e) {
         e.preventDefault();
-        axios.post(
-            `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
-            { email, password },
-            { withCredentials: true }
+        setError("");
+            
+        api.post(
+            '/auth/login',
+            { email, password }
         )
         .then((response) => {
-            if( response.data.user) {
+            if(response.data.user) {
                 window.location.href = "/todo";
             }
         })
         .catch((error) => {
-            console.log(error.response.data);
+            console.log(error.response?.data || error);
+            setError("Login failed. Please check your credentials.");
         });
     }
+    
     return (
         <div className='form-container'>
             <h1>Login</h1>
+            {error && <div className="error-message">{error}</div>}
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
