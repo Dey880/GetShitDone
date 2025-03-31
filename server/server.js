@@ -43,4 +43,14 @@ people are saying—many people, actually—that I am the most powerful API ever
 Believe me.`);
 });
 
+if (process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        if (req.header('x-forwarded-proto') !== 'https') {
+            res.redirect(`https://${req.header('host')}${req.url}`);
+        } else {
+            next();
+        }
+    });
+}
+
 app.listen(process.env.PORT)
