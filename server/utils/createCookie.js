@@ -4,8 +4,8 @@ async function createCookie(res, jwtToken) {
     res.cookie("jwt", jwtToken, {
         httpOnly: true, 
         maxAge: 1000*60*60*24*5, // 5 days
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
+        secure: "false",
+        sameSite: "lax",
     });
 }
 
