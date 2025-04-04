@@ -1,0 +1,63 @@
+name: Auto Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    # Manual trigger option
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Build and deploy backend
+      env:
+        PORT: ${{ secrets.PORT }}
+        MONGODB_URL: ${{ secrets.MONGODB_URL }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        SALT_ROUNDS: ${{ secrets.SALT_ROUNDS }}
+        NODE_ENV: production
+      run: |
+        cd code/server
+        npm install
+        npm ci
+        # Add deployment commands here, e.g., PM2 or similar
+        echo "Backend build completed"
+
+    - name: Build and deploy frontend
+      env:
+        REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
+      run: |
+        cd code/frontend
+        npm install
+        npm ci
+        npm run build
+        # Add deployment commands here, e.g., copy to web server directory
+        echo "Frontend build completed"
+
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "Deployment completed successfully!"
+        else
+          echo "Deployment failed."
+        fi
