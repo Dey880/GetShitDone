@@ -5,7 +5,7 @@ async function createCookie(res, jwtToken) {
         httpOnly: true,
         maxAge: 1000*60*60*24*5, // 5 days
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        secure: process.env.NODE_ENV === "production", // Only send cookies over HTTPS in production
+        secure: process.env.NODE_ENV === "production",
     });
 }
 
