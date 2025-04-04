@@ -42,17 +42,6 @@ jobs:
         # Add deployment commands here, e.g., PM2 or similar
         echo "Backend build completed"
 
-    - name: Build and deploy frontend
-      env:
-        REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
-      run: |
-        cd code/frontend
-        npm install
-        npm ci
-        npm run build
-        # Add deployment commands here, e.g., copy to web server directory
-        echo "Frontend build completed"
-
     - name: Notify deployment status
       if: always()
       run: |
